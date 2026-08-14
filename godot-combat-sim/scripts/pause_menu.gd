@@ -1,19 +1,16 @@
-class_name PauseMenu
 extends CanvasLayer
 
-
-func _ready() -> void:
+func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
 
 
-func _input(event: InputEvent) -> void:
+func _input(event):
 	if event.is_action_pressed("ui_cancel"):
 		toggle_pause()
-		get_viewport().set_input_as_handled()
 
 
-func toggle_pause() -> void:
+func toggle_pause():
 	get_tree().paused = not get_tree().paused
 	visible = get_tree().paused
 
@@ -23,9 +20,9 @@ func toggle_pause() -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
-func _on_resume_pressed() -> void:
+func _on_resume_pressed():
 	toggle_pause()
 
 
-func _on_quit_pressed() -> void:
+func _on_quit_pressed():
 	get_tree().quit()
