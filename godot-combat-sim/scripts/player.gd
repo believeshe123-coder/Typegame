@@ -4,6 +4,9 @@ const SPEED = 5.0
 const JUMP_VELOCITY = 4.5
 const MOUSE_SENSITIVITY = 0.003
 const AIM_DISTANCE = 1000.0
+const MAX_HEALTH = 100
+
+var health = MAX_HEALTH
 
 var fireball_scene = preload("res://fireball.tscn")
 
@@ -26,6 +29,12 @@ func _input(event):
 			deg_to_rad(-60),
 			deg_to_rad(60)
 		)
+
+	# TEMPORARY health test
+	if event is InputEventKey:
+		if event.pressed and not event.echo:
+			if event.keycode == KEY_H:
+				take_damage(10) 
 
 
 func _physics_process(delta):
@@ -67,13 +76,13 @@ func shoot_fireball():
 	var camera = $CameraPivot/Camera3D
 	var crosshair = get_parent().get_node("HUD/Crosshair")
 
-	# Find the actual center of the crosshair
+	# Find actual center of crosshair
 	var crosshair_position = (
 		crosshair.global_position
 		+ crosshair.size / 2.0
 	)
 
-	# Cast an invisible ray from the camera through the crosshair
+	# Ray from camera through crosshair
 	var ray_origin = camera.project_ray_origin(crosshair_position)
 	var ray_direction = camera.project_ray_normal(crosshair_position).normalized()
 	var ray_end = ray_origin + ray_direction * AIM_DISTANCE
@@ -83,19 +92,17 @@ func shoot_fireball():
 		ray_end
 	)
 
-	# Don't aim at our own player collision
+	# Don't aim at player
 	query.exclude = [self]
 
 	var result = get_world_3d().direct_space_state.intersect_ray(query)
 
-	# If nothing is hit, aim far into the distance
 	var target_position = ray_end
 
-	# If the crosshair is over something, aim at that exact point
 	if result:
 		target_position = result.position
 
-	# Create the fireball
+	# Create fireball
 	var fireball = fireball_scene.instantiate()
 	get_parent().add_child(fireball)
 
@@ -117,6 +124,26 @@ func shoot_fireball():
 
 	fireball.global_position = spawn_position
 
-	# Point fireball from its spawn location
-	# toward whatever is underneath the crosshair
+	# Aim toward crosshair
 	fireball.look_at(target_position, Vector3.UP)
+
+
+func take_damage(amount):
+	health -= amount
+	health = clamp(health, 0, MAX_HEALTH)
+
+	print("Player Health: ", health)
+
+	if health <= 0:
+		die()
+
+
+func heal(amount):
+	health += amount
+	health = clamp(health, 0, MAX_HEALTH)
+
+	print("Player Health: ", health)
+
+
+func die():
+	print("Player died")
